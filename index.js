@@ -1,6 +1,7 @@
 "use strict";
 
 const path = require("path");
+const pkgUp = require("pkg-up");
 const ServerlessWebpack = require("serverless-webpack");
 
 const config = require("./src/config");
@@ -9,26 +10,32 @@ function getWebpackConfigPath(servicePath) {
   return path.relative(servicePath, __dirname) + "/src/webpack.config.js";
 }
 
-function getConfig(custom, servicePath) {
-  const webpackConfigPath = getWebpackConfigPath(servicePath);
-
-  if (custom) {
-    if (custom.webpack) {
-      throw "serverless-webpack config detected in serverless.yml. serverless-bundle is not compatible with serverless-webpack.";
-    }
-
-    custom.webpack = {
-      webpackConfig: webpackConfigPath
-    };
-
-    return custom;
+function applyWebpackOptions(custom, config) {
+  if (custom.webpack) {
+    throw "serverless-webpack config detected in serverless.yml. serverless-bundle is not compatible with serverless-webpack.";
   }
 
-  return {
-    webpack: {
-      webpackConfig: webpackConfigPath
+  custom.webpack = {
+    packager: config.options.packager,
+    packagerOptions: config.options.packagerOptions,
+    webpackConfig: getWebpackConfigPath(config.servicePath),
+    includeModules: {
+      forceExclude: ["aws-sdk"],
+      forceInclude: config.options.forceInclude,
+      // Generate relative path for the package.json
+      // For cases where the services are nested and don't have their own package.json
+      // Traverse up the tree to find the path to the nearest package.json
+      packagePath: path.relative(config.servicePath, pkgUp.sync())
     }
   };
+}
+
+function applyUserConfig(config, userConfig, servicePath, runtime) {
+  config.servicePath = servicePath;
+  config.options = Object.assign(config.options, userConfig);
+  // Default to Node 10 if no runtime found
+  config.nodeVersion =
+    Number.parseInt((runtime || "").replace("nodejs", ""), 10) || 10;
 }
 
 class ServerlessPlugin extends ServerlessWebpack {
@@ -42,10 +49,15 @@ class ServerlessPlugin extends ServerlessWebpack {
       const service = this.serverless.service;
       const servicePath = this.serverless.config.servicePath;
 
-      service.custom = getConfig(service.custom, servicePath);
+      service.custom = service.custom || {};
 
-      config.servicePath = servicePath;
-      config.options = Object.assign(config.options, service.custom.bundle);
+      applyUserConfig(
+        config,
+        service.custom.bundle,
+        servicePath,
+        service.provider.runtime
+      );
+      applyWebpackOptions(service.custom, config);
     }.bind(this);
   }
 }

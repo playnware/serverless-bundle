@@ -2,11 +2,17 @@
 
 module.exports = {
   servicePath: "",
+  nodeVersion: null,
   options: {
     stats: false,
     caching: true,
     linting: false,
+    fixPackages: [],
+    packager: "npm",
     copyFiles: null,
-    sourcemaps: true
+    sourcemaps: true,
+    forceInclude: null,
+    ignorePackages: [],
+    packagerOptions: {}
   }
 };

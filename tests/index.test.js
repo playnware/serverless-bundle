@@ -3,7 +3,8 @@ const path = require("path");
 const { spawnSync } = require("child_process");
 
 const timeout = 10000;
-const errorString = 'Error ------------------------------------------';
+const errorString = "Error ------------------------------------------";
+const eslintErrorString = "no-unused-vars";
 
 const packageCmd = ["package"];
 const invokeCmd = ["invoke", "local", "-f", "hello"];
@@ -17,7 +18,17 @@ test("base case", () => {
 });
 
 test("class properties", () => {
-  const results = runSlsCommand("base");
+  const results = runSlsCommand("class-properties");
+  expect(results).not.toContain(errorString);
+});
+
+test("exclude externals", () => {
+  const results = runSlsCommand("externals");
+  expect(results).not.toContain(errorString);
+});
+
+test("ignore packages", () => {
+  const results = runSlsCommand("ignore-packages");
   expect(results).not.toContain(errorString);
 });
 
@@ -31,9 +42,17 @@ test("nested service", () => {
   expect(results).not.toContain(errorString);
 });
 
+test("nested services", () => {
+  const results = runSlsCommand(
+    "nested-services/services/service1",
+    packageCmd
+  );
+  expect(results).not.toContain(errorString);
+});
+
 test("check eslint", () => {
   const results = runSlsCommand("failed-eslint/service");
-  expect(results).toContain(errorString);
+  expect(results).toContain(eslintErrorString);
 });
 
 test("override eslint", () => {
@@ -56,6 +75,16 @@ test("ignore warmup plugin", () => {
   expect(results).not.toContain(errorString);
 });
 
+test("node 12", () => {
+  const results = runSlsCommand("with-node12");
+  expect(results).not.toContain(errorString);
+});
+
+test("invalid runtime", () => {
+  const results = runSlsCommand("invalid-runtime");
+  expect(results).not.toContain(errorString);
+});
+
 test("copy files", () => {
   const results = runSlsCommand("copy-files");
   expect(results).not.toContain(errorString);
@@ -64,30 +93,64 @@ test("copy files", () => {
   ).toBe(true);
 });
 
-function runSlsCommand(cwd, cmd) {
+test("fixpackages formidable@1.x", () => {
+  const results = runSlsCommand("fixpackages-formidable");
+  expect(results).not.toContain(errorString);
+});
+
+function clearNodeModules(cwd) {
+  const { stdout, error } = spawnSync("rm", ["-rf", "node_modules/"], {
+    cwd,
+    timeout
+  });
+
+  if (error) {
+    throw error;
+  }
+}
+
+function doNpmInstall(cwd) {
   cwd = path.resolve(__dirname, cwd);
-  const { stdout, error } = spawnSync(
-    "serverless",
-    cmd || invokeCmd,
-    { cwd, timeout }
-  );
+  const hasPackageJson = fs.existsSync(cwd + "/package.json");
+
+  if (hasPackageJson) {
+    clearNodeModules(cwd);
+
+    const { stdout, error } = spawnSync("npm", ["install"], {
+      cwd,
+      timeout: 30000
+    });
+
+    if (error) {
+      throw error;
+    }
+  }
+}
+
+function runSlsCommand(cwd, cmd) {
+  doNpmInstall(cwd);
+
+  cwd = path.resolve(__dirname, cwd);
+  const { stdout, error } = spawnSync("serverless", cmd || invokeCmd, {
+    cwd,
+    timeout
+  });
 
   if (error) {
     throw error;
   }
 
-  const results = stdout.toString('utf8');
+  const results = stdout.toString("utf8");
   console.log(results);
 
   return results;
 }
 
 function clearNpmCache() {
-  const { stdout, error } = spawnSync(
-    "rm",
-    ["-rf", "node_modules/.cache/"],
-    { __dirname, timeout }
-  );
+  const { stdout, error } = spawnSync("rm", ["-rf", "node_modules/.cache/"], {
+    __dirname,
+    timeout
+  });
 
   if (error) {
     throw error;
