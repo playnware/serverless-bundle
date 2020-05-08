@@ -17,6 +17,11 @@ test("base case", () => {
   expect(results).not.toContain(errorString);
 });
 
+test("Load gql files", () => {
+  const results = runSlsCommand("load-gql-files");
+  expect(results).not.toContain(errorString);
+});
+
 test("class properties", () => {
   const results = runSlsCommand("class-properties");
   expect(results).not.toContain(errorString);
@@ -90,6 +95,14 @@ test("copy files", () => {
   expect(results).not.toContain(errorString);
   expect(
     fs.existsSync("tests/copy-files/.webpack/service/public/test.txt")
+  ).toBe(true);
+});
+
+test("concat text", () => {
+  const results = runSlsCommand("concat-text");
+  expect(results).not.toContain(errorString);
+  expect(
+    fs.existsSync("tests/concat-text/.webpack/service/static/test-concat.txt")
   ).toBe(true);
 });
 

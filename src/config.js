@@ -10,6 +10,7 @@ module.exports = {
     fixPackages: [],
     packager: "npm",
     copyFiles: null,
+    concatText: null,
     sourcemaps: true,
     forceInclude: null,
     ignorePackages: [],
