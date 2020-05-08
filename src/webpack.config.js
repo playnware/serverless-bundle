@@ -234,7 +234,7 @@ module.exports = ignoreWarmupPlugin({
     // thanks https://blog.johnnyreilly.com/2018/08/killing-relative-paths-with-typescript-and.html
     plugins: [
       new TsconfigPathsPlugin({
-        /*configFile: "./path/to/tsconfig.json" */
+        configFile: "./../../tsconfig.json"
       })
     ]
   },
