@@ -5,7 +5,7 @@ module.exports = {
   options: {
     stats: false,
     caching: true,
-    linting: true,
+    linting: false,
     copyFiles: null,
     sourcemaps: true
   }

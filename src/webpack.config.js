@@ -53,7 +53,7 @@ function babelLoader() {
             }
           }
         ]
-      ]
+      ],
     }
   };
 }
@@ -135,6 +135,9 @@ module.exports = ignoreWarmupPlugin({
     hints: false
   },
   resolve: {
+    alias: {
+      lib: path.resolve(__dirname, 'lib'),
+    },
     // Performance
     symlinks: false,
     // First start by looking for modules in the plugin's node_modules
