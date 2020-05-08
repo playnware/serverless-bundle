@@ -26,6 +26,8 @@ With this fork we are looking to adapt Serverless Bundle to Cloudware Serverless
 
 > **Note**: For NPM credentials ask for to dev team.
 
+We use [np](https://www.npmjs.com/package/np) for releases
+
 `npm install --global np`
 
-`np`
+`np --yolo`
