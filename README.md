@@ -18,3 +18,14 @@ With this fork we are looking to adapt Serverless Bundle to Cloudware Serverless
     }
 ```
 - Added Typescript support by forking the Beta branch
+
+
+## Publish package
+
+[Manual](https://zellwk.com/blog/publish-to-npm/)
+
+> **Note**: For NPM credentials ask for to dev team.
+
+`npm install --global np`
+
+`np`
